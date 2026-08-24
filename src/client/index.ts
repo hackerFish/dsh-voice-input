@@ -47,15 +47,17 @@ function MicIcon({ size = 15 }: { size?: number }): any {
 function MicButton(props: any): any {
   const { useInput, inputActions } = props
   const input = useInput((s: any) => s)
+  const draftRef = useRef('')
+  draftRef.current = input?.draft ?? '' // 每次渲染同步最新草稿（识别结束时用最新值合并）
   const supported = speechRecognitionCtor() !== null
   const [state, setState] = useState<'idle' | 'listening' | 'starting'>('idle')
   const [hint, setHint] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [hover, setHover] = useState(false)
   const recRef = useRef<any>(null)
-  const baseDraftRef = useRef('')
   const finalRef = useRef('')
   const liveRef = useRef(false)
+  const busyRef = useRef(false)
   const errorTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
@@ -74,7 +76,7 @@ function MicButton(props: any): any {
   }
 
   const commit = (text: string): void => {
-    const base = (baseDraftRef.current ?? '').trimEnd()
+    const base = (draftRef.current ?? '').trimEnd()
     const merged = base === '' ? text : base + ' ' + text
     if (merged.trim() !== '' && typeof inputActions?.setDraft === 'function') {
       inputActions.setDraft(merged)
@@ -86,13 +88,20 @@ function MicButton(props: any): any {
   }
 
   const startRecognition = async (): Promise<void> => {
+    if (busyRef.current) return // 防重入：权限等待/启动中忽略连点
     const Ctor = speechRecognitionCtor()
     if (!Ctor) { showError('当前浏览器不支持语音识别，请使用 Chrome 或 Edge'); return }
+    busyRef.current = true
+    setState('starting')
+    setError(null)
+    setHint(null)
     // 预检麦克风权限：失败时给出明确提示（SpeechRecognition 的权限报错较隐晦）
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       stream.getTracks().forEach((track) => track.stop())
     } catch {
+      busyRef.current = false
+      setState('idle')
       showError('麦克风权限被拒绝——点击地址栏左侧图标，允许使用麦克风后重试')
       return
     }
@@ -101,7 +110,6 @@ function MicButton(props: any): any {
     rec.interimResults = true
     rec.continuous = false // 停顿自动结束，一次点击说一句
     rec.maxAlternatives = 1
-    baseDraftRef.current = input?.draft ?? ''
     finalRef.current = ''
     liveRef.current = true
     rec.onresult = (e: any) => {
@@ -115,6 +123,7 @@ function MicButton(props: any): any {
     }
     rec.onerror = (e: any) => {
       liveRef.current = false
+      busyRef.current = false
       const code = e?.error
       if (code === 'not-allowed' || code === 'service-not-allowed') {
         showError('麦克风权限被拒绝——点击地址栏左侧图标，允许使用麦克风后重试')
@@ -132,19 +141,18 @@ function MicButton(props: any): any {
     }
     rec.onend = () => {
       liveRef.current = false
+      busyRef.current = false
       const text = finalRef.current.trim()
       if (text !== '') commit(text)
       setState('idle')
       setHint(null)
     }
     recRef.current = rec
-    setState('starting')
-    setError(null)
-    setHint(null)
     try {
       rec.start()
       setState('listening')
     } catch {
+      busyRef.current = false
       setState('idle')
       showError('语音识别启动失败，请重试')
     }
