@@ -1,0 +1,4 @@
+# dsh bundle patch: 将语音输入插入 profile 层栈（结构同官方 bundle）
+- insert:
+    - id: dsh-voice-input
+      name: '@hackerfish/dsh-voice-input'

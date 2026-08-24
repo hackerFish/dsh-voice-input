@@ -1,0 +1,45 @@
+{
+  "name": "@hackerfish/dsh-voice-input",
+  "version": "0.1.0",
+  "description": "语音输入：对话框麦克风按钮，浏览器内置 Web Speech API（zh-CN）识别，结果填入输入框草稿",
+  "type": "module",
+  "scripts": {
+    "build": "tsup && node scripts/wrap-client.mjs && node scripts/self-test-client.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "main": "./lib/host/index.mjs",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
+    }
+  },
+  "files": [
+    "lib/",
+    "cordis.patch.yml"
+  ],
+  "exports": {
+    ".": {
+      "default": "./lib/host/index.mjs"
+    },
+    "./client": "./lib/client/index.js",
+    "./package.json": "./package.json"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2"
+  }
+}
