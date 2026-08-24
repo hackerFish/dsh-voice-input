@@ -39,14 +39,14 @@ npm run build   # tsup 构建 + client 包装 + 自测
 
 ## 安装到 dsh
 
-本地开发（file: 引用，改代码即时生效需重装）：
+本地开发（`file:` 引用，改代码后需重装才生效）：
 
 1. `npm run build` 确保 `lib/` 产物最新；
-2. 在 `D:\CY\dsh\.dsh\profiles\web\package.json` 的 `dependencies` 加
-   `"@hackerfish/dsh-voice-input": "file:D:/CY/dsh-voice-input"`，
-   在 `dsh.profile.bundles` 加 `"@hackerfish/dsh-voice-input"`；
-3. 在 `D:\CY\dsh\.dsh\profiles\web` 执行 `pnpm install`；
-4. 重启 dsh（`node D:\CY\dsh\dsh-launch\launcher.js`），刷新页面。
+2. 在目标 profile 的 `package.json`（`$DSH_HOME/profiles/<profile>/package.json`）中：
+   - `dependencies` 加 `"@hackerfish/dsh-voice-input": "file:<本机插件目录绝对路径>"`；
+   - `dsh.profile.bundles` 加 `"@hackerfish/dsh-voice-input"`；
+3. 在该 profile 目录执行 `pnpm install`；
+4. 重启 dsh，刷新页面即可看到输入条右侧的 🎤 按钮。
 
 GitHub 安装：
 
