@@ -1,5 +1,9 @@
 # dsh-voice-input · 语音输入插件
 
+[![GitHub](https://img.shields.io/badge/GitHub-hackerFish%2Fdsh--voice--input-181717?logo=github&logoColor=white)](https://github.com/hackerFish/dsh-voice-input)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![dsh](https://img.shields.io/badge/dsh%20ecosystem-plugin-4b32c3)](https://github.com/topics/dsh)
+
 DSH（DeepSeek Harness）的对话框语音输入插件：在聊天输入条加一个 🎤 麦克风按钮，
 用**浏览器内置的 Web Speech API（zh-CN）** 实时识别中文语音，说完自动把文字填入输入框草稿，
 检查/修改后回车发送。**零配置、零密钥、纯浏览器能力**（Chrome / Edge）。
@@ -35,12 +39,22 @@ npm run build   # tsup 构建 + client 包装 + 自测
 
 ## 安装到 dsh
 
+本地开发（file: 引用，改代码即时生效需重装）：
+
 1. `npm run build` 确保 `lib/` 产物最新；
 2. 在 `D:\CY\dsh\.dsh\profiles\web\package.json` 的 `dependencies` 加
    `"@hackerfish/dsh-voice-input": "file:D:/CY/dsh-voice-input"`，
    在 `dsh.profile.bundles` 加 `"@hackerfish/dsh-voice-input"`；
 3. 在 `D:\CY\dsh\.dsh\profiles\web` 执行 `pnpm install`；
 4. 重启 dsh（`node D:\CY\dsh\dsh-launch\launcher.js`），刷新页面。
+
+GitHub 安装：
+
+```bash
+dsh plugin --profile web add https://github.com/hackerFish/dsh-voice-input
+```
+
+（或手动把 `github:hackerFish/dsh-voice-input` 加进 profile 的 dependencies 后 `pnpm install`。）
 
 ## 说明与限制
 
