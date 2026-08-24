@@ -1,64 +1,68 @@
-# dsh-voice-input · 语音输入插件
+# dsh-voice-input · Voice Input Plugin
 
 [![GitHub](https://img.shields.io/badge/GitHub-hackerFish%2Fdsh--voice--input-181717?logo=github&logoColor=white)](https://github.com/hackerFish/dsh-voice-input)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![dsh](https://img.shields.io/badge/dsh%20ecosystem-plugin-4b32c3)](https://github.com/topics/dsh)
 
-DSH（DeepSeek Harness）的对话框语音输入插件：在聊天输入条加一个 🎤 麦克风按钮，
-用**浏览器内置的 Web Speech API（zh-CN）** 实时识别中文语音，说完自动把文字填入输入框草稿，
-检查/修改后回车发送。**零配置、零密钥、纯浏览器能力**（Chrome / Edge）。
+[中文](README.zh.md)
 
-## 功能
+A voice-input plugin for DSH (DeepSeek Harness): adds a 🎤 mic button to the chat composer.
+It uses the **browser-native Web Speech API (zh-CN)** to transcribe Chinese speech in real time;
+when you finish speaking, the transcript is filled into the input draft for review/editing
+before you press Enter to send. **Zero config, zero keys, pure browser capability** (Chrome / Edge).
 
-- 输入条右侧麦克风按钮（`conversation.input.right` 插槽），点击开始聆听、再点或停顿结束；
-- 聆听中显示实时转写与脉冲指示；结束后识别文本**追加到当前草稿**（不自动发送）；
-- 权限被拒 / 无麦克风 / 网络受限等错误均有明确中文提示；
-- 设置页「语音输入」标签（`settings.plugins.tab`）：浏览器支持状态 + 插件加载状态。
+## Features
 
-## 结构
+- Mic button on the right side of the composer (`conversation.input.right` slot) — click to start listening, click again or pause to stop;
+- Live transcript with a pulsing indicator while listening; the final text is **appended to the current draft** (never auto-sends);
+- Clear error hints for denied permission / no microphone / restricted network / unsupported browser;
+- Settings tab "Voice Input" (`settings.plugins.tab`): browser support status + plugin load status;
+- **UI fully localized (zh / en)** — follows the DSH language preference automatically.
+
+## Structure
 
 ```
 src/
-  host/index.ts     host 半端：/dsh-voice-input/health 健康路由（识别本身纯浏览器）
-  client/index.ts   client 半端：麦克风按钮 + Web Speech API + 设置页
+  host/index.ts     host half: /dsh-voice-input/health route (recognition itself is pure browser)
+  client/index.ts   client half: mic button + Web Speech API + settings page (i18n zh/en)
 scripts/
-  wrap-client.mjs      按官方 __ModuleLoader__.load 协议包装 client bundle
-  self-test-client.mjs 结构/加载/注册三关自测
-tsup.config.ts      host(esm,node) + client(cjs,browser) 双构建
-cordis.patch.yml   profile 层栈插入补丁
+  wrap-client.mjs       wraps the client bundle with the official __ModuleLoader__.load protocol
+  self-test-client.mjs  structure / load / registration assertions
+tsup.config.ts      dual build: host (esm, node) + client (cjs, browser)
+cordis.patch.yml   profile stack insertion patch
 ```
 
-## 开发 / 构建
+## Develop / Build
 
 ```bash
 npm install
-npm run build   # tsup 构建 + client 包装 + 自测
+npm run build   # tsup build + client wrap + self-test
 ```
 
-产物：`lib/host/index.mjs`（host）、`lib/client/index.js`（client bundle）。
+Outputs: `lib/host/index.mjs` (host), `lib/client/index.js` (client bundle).
 
-## 安装到 dsh
+## Install into dsh
 
-本地开发（`file:` 引用，改代码后需重装才生效）：
+Local development (a `file:` reference; reinstall after code changes):
 
-1. `npm run build` 确保 `lib/` 产物最新；
-2. 在目标 profile 的 `package.json`（`$DSH_HOME/profiles/<profile>/package.json`）中：
-   - `dependencies` 加 `"@hackerfish/dsh-voice-input": "file:<本机插件目录绝对路径>"`；
-   - `dsh.profile.bundles` 加 `"@hackerfish/dsh-voice-input"`；
-3. 在该 profile 目录执行 `pnpm install`；
-4. 重启 dsh，刷新页面即可看到输入条右侧的 🎤 按钮。
+1. `npm run build` to make sure `lib/` is up to date;
+2. In the target profile's `package.json` (`$DSH_HOME/profiles/<profile>/package.json`):
+   - add `"@hackerfish/dsh-voice-input": "file:<absolute path to the plugin dir>"` to `dependencies`;
+   - add `"@hackerfish/dsh-voice-input"` to `dsh.profile.bundles`;
+3. Run `pnpm install` in that profile directory;
+4. Restart dsh and refresh the page — you will see the 🎤 button on the right of the composer.
 
-GitHub 安装：
+Install from GitHub:
 
 ```bash
 dsh plugin --profile web add https://github.com/hackerFish/dsh-voice-input
 ```
 
-（或手动把 `github:hackerFish/dsh-voice-input` 加进 profile 的 dependencies 后 `pnpm install`。）
+(or add `github:hackerFish/dsh-voice-input` to the profile's `dependencies` and run `pnpm install`.)
 
-## 说明与限制
+## Notes & Limitations
 
-- 识别依赖 Chrome/Edge 内置的在线语音识别服务；断网或服务不可达时报「网络受限」提示。
-- 首次点击会请求麦克风权限（`getUserMedia` 预检），拒绝后有明确指引。
-- 默认一次说一句：停顿自动结束（`continuous=false`），也可再点按钮提前结束。
-- 识别结果只填入草稿，不自动发送，避免误识别直接发出。
+- Recognition depends on the online speech service built into Chrome/Edge; when offline or unreachable, a "network restricted" hint is shown.
+- The first click requests microphone permission (a `getUserMedia` pre-check); a denial shows clear guidance.
+- One utterance at a time: it stops automatically after a pause (`continuous=false`), or click again to stop early.
+- The transcript only fills the draft and never auto-sends, so misrecognitions can be corrected before sending.
